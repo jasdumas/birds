@@ -1,0 +1,72 @@
+meta:
+  name:
+    short: Daly Analytics
+    full: Daly Analytics LLC
+  link:
+    home: https://dalyanalytics.com
+    github: https://github.com/dalyanalytics
+    linkedin: https://www.linkedin.com/company/dalyanalytics
+
+logo:
+  images:
+    header: logos/sunset.png
+    header-white: logos/white.png
+    full: 
+      path: logos/stacked.png
+      alt: Daly Analytics logo
+    small: logos/sunset.png
+  medium:
+    light: header-white
+    dark: header-white
+  large: full
+
+color:
+  palette:
+    purple: "#AD92B1"
+    pink: "#D68A93"
+    orange: "#F9B397"
+    magenta: "#B07891"
+    blue: "#6A94C9"
+    lightblue: "#AECBED"
+    darkgreen: "#004D40"
+  foreground: darkgreen
+  background: "#FFFFFF"
+  primary: lightblue
+  secondary: lightblue
+  tertiary: magenta
+  success: purple
+  info: blue
+  warning: pink
+  danger: lightblue
+  light: "#FFFFFF"
+  dark: "#404041"
+
+typography:
+  fonts:
+    - family: Frank Ruhl Libre
+      source: google
+      weight: [300, 400, 700]
+      style: [normal, italic]
+    - family: Manrope
+      source: google
+      weight: [300, 400, 700]
+      style: [normal, italic]
+  base:
+    family: Frank Ruhl Libre
+    weight: 400
+    size: 18px
+    line-height: 1.5
+  headings:
+    family: Frank Ruhl Libre
+    weight: 700
+    style: normal
+    line-height: 1.2
+    color: darkgreen
+  monospace:
+    family: Manrope
+    weight: 400
+    size: 0.9em
+  link:
+    weight: 600
+    color: darkgreen
+    decoration: underline
