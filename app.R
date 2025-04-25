@@ -64,7 +64,8 @@ full_width_with_wave_header <- div(
     h2("Connecticut Priority Bird Species"),
     p("Conservation efforts focused on these high-priority bird species help 
        protect and enhance habitats that benefit other wildlife and people across Connecticut. 
-       This is an demo Shiny app showcasing example priority bird species.")
+       This is an demo Shiny app showcasing example priority bird species. 
+      Illustrations & inspiration are from https://ct.audubon.org/priority-bird-species")
   )
 )
 
