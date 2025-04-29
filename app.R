@@ -2,6 +2,13 @@ library(shiny)
 library(bslib)
 library(htmltools)
 library(leaflet)
+library(bsicons)
+library(readr)
+library(dplyr)
+library(purrr)
+library(stringr)
+
+source("curated_data_prep.R", local = TRUE)
 
 # Wave header (inverted)
 wave_header <- div(
@@ -65,81 +72,87 @@ full_width_with_wave_header <- div(
     p("Conservation efforts focused on these high-priority bird species help 
        protect and enhance habitats that benefit other wildlife and people across Connecticut. 
        This is an demo Shiny app showcasing example priority bird species. 
-      Illustrations & inspiration are from https://ct.audubon.org/priority-bird-species")
-  )
+      Illustrations & inspiration are from: ", a(
+        href = "https://ct.audubon.org/priority-bird-species",  
+        target = "_blank",
+        "Audubon Priority Birds in Connecticut", 
+        style = "text-decoration: none; text-align: center; "
+      ) )
+    
+  ) 
+  
 )
-
 
 
 # Sample bird data with added population counts
-birds <- list(
-  list(
-    name = "American Oystercatcher",
-    scientific_name = "Haematopus palliatus",
-    status = "Species of Concern",
-    habitat = "Coastal, Shoreline",
-    population = "11,500",
-    image = "https://nas-national-prod.s3.amazonaws.com/styles/api_bird_illustration_with_crop_193_200/public/birds/illustration/2820_Sibl_9780307957900_art_r1.jpg",
-    range_center = list(lat = 41.2, lng = -72.5),
-    range_radius = 50000, # meters
-    description = "Found along the Atlantic coast of Connecticut. These birds nest on beaches and feed on shellfish in tidal areas."
-  ),
-  list(
-    name = "Saltmarsh Sparrow",
-    scientific_name = "Ammospiza caudacuta",
-    status = "Endangered",
-    habitat = "Saltmarsh, Coastal",
-    population = "53,000",
-    image = "https://nas-national-prod.s3.amazonaws.com/styles/api_bird_illustration_with_crop_193_200/public/birds/illustration/6519_Sibl_9780307957900_art_r1.jpg",
-    range_center = list(lat = 41.3, lng = -72.3),
-    range_radius = 30000, # meters
-    description = "Limited to salt marshes along Connecticut's coast. Highly vulnerable to sea level rise and habitat loss."
-  ),
-  list(
-    name = "Piping Plover",
-    scientific_name = "Charadrius melodus",
-    status = "Threatened",
-    habitat = "Beach, Coastal",
-    population = "8,400",
-    image = "https://nas-national-prod.s3.amazonaws.com/styles/api_bird_illustration_with_crop_193_200/public/birds/illustration/1256_Sibl_9780307957900_art_r1.jpg",
-    range_center = list(lat = 41.25, lng = -72.8),
-    range_radius = 45000, # meters
-    description = "Nests on sandy beaches along Connecticut's shoreline. Protection efforts include fencing off nesting areas during breeding season."
-  ),
-  list(
-    name = "American Woodcock",
-    scientific_name = "Scolopax minor",
-    status = "Special Concern",
-    habitat = "Forest, Wetland",
-    population = "3,500,000",
-    image = "https://nas-national-prod.s3.amazonaws.com/styles/api_bird_illustration_with_crop_193_200/public/birds/illustration/5207_Sibl_9780307957900_art_r1.jpg",
-    range_center = list(lat = 41.6, lng = -72.7),
-    range_radius = 70000, # meters
-    description = "Found in young forests and shrublands throughout Connecticut. Known for its unique 'sky dance' courtship display at dusk."
-  ),
-  list(
-    name = "Common Tern",
-    scientific_name = "Sterna hirundo",
-    status = "Special Concern",
-    habitat = "Coastal, Islands",
-    population = "590,000",
-    image = "https://nas-national-prod.s3.amazonaws.com/styles/api_bird_illustration_with_crop_193_200/public/birds/illustration/6600_Sibl_9780307957900_art_r1.jpg",
-    range_center = list(lat = 41.3, lng = -72.1),
-    range_radius = 60000, # meters
-    description = "Nests on islands and coastal areas. Conservation efforts include creating and maintaining artificial nesting sites."
-  ),
-  list(
-    name = "Wood Thrush",
-    scientific_name = "Hylocichla mustelina",
-    status = "Vulnerable",
-    habitat = "Forest, Woodland",
-    population = "12,000,000",
-    image = "https://nas-national-prod.s3.amazonaws.com/styles/api_bird_illustration_with_crop_193_200/public/birds/illustration/4557_Sibl_9780307957900_art_r1.jpg",
-    range_center = list(lat = 41.7, lng = -72.5),
-    range_radius = 80000, # meters
-    description = "Found in mature forests throughout Connecticut. Known for its flute-like song that echoes through the woods."
-  )
-)
+# birds <- list(
+#   list(
+#     name = "American Oystercatcher",
+#     scientific_name = "Haematopus palliatus",
+#     status = "Species of Concern",
+#     habitat = "Coastal, Shoreline",
+#     population = "11,500",
+#     image = "https://nas-national-prod.s3.amazonaws.com/styles/api_bird_illustration_with_crop_193_200/public/birds/illustration/2820_Sibl_9780307957900_art_r1.jpg",
+#     range_center = list(lat = 41.2, lng = -72.5),
+#     range_radius = 50000, # meters
+#     description = "Found along the Atlantic coast of Connecticut. These birds nest on beaches and feed on shellfish in tidal areas."
+#   ),
+#   list(
+#     name = "Saltmarsh Sparrow",
+#     scientific_name = "Ammospiza caudacuta",
+#     status = "Endangered",
+#     habitat = "Saltmarsh, Coastal",
+#     population = "53,000",
+#     image = "https://nas-national-prod.s3.amazonaws.com/styles/api_bird_illustration_with_crop_193_200/public/birds/illustration/6519_Sibl_9780307957900_art_r1.jpg",
+#     range_center = list(lat = 41.3, lng = -72.3),
+#     range_radius = 30000, # meters
+#     description = "Limited to salt marshes along Connecticut's coast. Highly vulnerable to sea level rise and habitat loss."
+#   ),
+#   list(
+#     name = "Piping Plover",
+#     scientific_name = "Charadrius melodus",
+#     status = "Threatened",
+#     habitat = "Beach, Coastal",
+#     population = "8,400",
+#     image = "https://nas-national-prod.s3.amazonaws.com/styles/api_bird_illustration_with_crop_193_200/public/birds/illustration/1256_Sibl_9780307957900_art_r1.jpg",
+#     range_center = list(lat = 41.25, lng = -72.8),
+#     range_radius = 45000, # meters
+#     description = "Nests on sandy beaches along Connecticut's shoreline. Protection efforts include fencing off nesting areas during breeding season."
+#   ),
+#   list(
+#     name = "American Woodcock",
+#     scientific_name = "Scolopax minor",
+#     status = "Special Concern",
+#     habitat = "Forest, Wetland",
+#     population = "3,500,000",
+#     image = "https://nas-national-prod.s3.amazonaws.com/styles/api_bird_illustration_with_crop_193_200/public/birds/illustration/5207_Sibl_9780307957900_art_r1.jpg",
+#     range_center = list(lat = 41.6, lng = -72.7),
+#     range_radius = 70000, # meters
+#     description = "Found in young forests and shrublands throughout Connecticut. Known for its unique 'sky dance' courtship display at dusk."
+#   ),
+#   list(
+#     name = "Common Tern",
+#     scientific_name = "Sterna hirundo",
+#     status = "Special Concern",
+#     habitat = "Coastal, Islands",
+#     population = "590,000",
+#     image = "https://nas-national-prod.s3.amazonaws.com/styles/api_bird_illustration_with_crop_193_200/public/birds/illustration/6600_Sibl_9780307957900_art_r1.jpg",
+#     range_center = list(lat = 41.3, lng = -72.1),
+#     range_radius = 60000, # meters
+#     description = "Nests on islands and coastal areas. Conservation efforts include creating and maintaining artificial nesting sites."
+#   ),
+#   list(
+#     name = "Wood Thrush",
+#     scientific_name = "Hylocichla mustelina",
+#     status = "Vulnerable",
+#     habitat = "Forest, Woodland",
+#     population = "12,000,000",
+#     image = "https://nas-national-prod.s3.amazonaws.com/styles/api_bird_illustration_with_crop_193_200/public/birds/illustration/4557_Sibl_9780307957900_art_r1.jpg",
+#     range_center = list(lat = 41.7, lng = -72.5),
+#     range_radius = 80000, # meters
+#     description = "Found in mature forests throughout Connecticut. Known for its flute-like song that echoes through the woods."
+#   )
+# )
 
 # Extract unique values for filters
 extract_unique_values <- function(birds, field) {
@@ -162,8 +175,8 @@ create_bird_card <- function(bird, index) {  # Add index parameter
     width = "100%",
     class = "bird-card",  # Add this class
     id = paste0("bird-card-", index),  # Add this ID
-    card_header(bird$name, class = "text-center"),
-    card_image(file = bird$image, fill = TRUE, height = "200px"),
+    card_header(h4(bird$name), class = "text-center"),
+    card_image(file = bird$image, fill = TRUE, height = "200px", width = "100%"),
     card_body(
       h6(em(bird$scientific_name)),
       tags$p(
@@ -172,8 +185,13 @@ create_bird_card <- function(bird, index) {  # Add index parameter
       tags$p(
         tags$strong("Habitat: "), bird$habitat
       ),
+      # tags$p(
+      #   tags$strong("Est. Population: "), bird$population, " birds"
+      # )
       tags$p(
-        tags$strong("Est. Population: "), bird$population, " birds"
+        tags$strong("Est. Population: "), 
+        format(bird$population, scientific = FALSE, big.mark = ","), 
+        " birds"
       )
     ),
     # Add click handler for map interaction
@@ -292,21 +310,7 @@ ui <- page_sidebar(
           style = "text-decoration: none; text-align: center; "
         )
       ),
-      #style = "margin-top: 20px; border: none; border-radius: 10px;" # Optional styling for rounded corners
-  
-       #),
-  
-    
-    # card(
-    #   # card_header(
-    #   #   p("Connecticut Priority Bird Species", class = "text-center")
-    #   # ),
-    #   card_body(
-    #     p("Conservation efforts focused on these high-priority bird species help 
-    #     protect and enhance habitats that benefit other wildlife and people across Connecticut. 
-    #     This is an example Shiny app showcasing priority bird species.")
-    #   )
-    # ),
+
     # Habitat filter
     card(
       card_header("Habitat", class = "text-center"),
@@ -332,45 +336,41 @@ ui <- page_sidebar(
     # Reset button
     actionButton("reset_filters", "Reset Filters", class = "btn-danger w-100 mt-3")
   ),
-  
-  # Main content
-  # card(
-  #   card_header(
-  #     h2("Connecticut Priority Bird Species", class = "text-center")
-  #   ),
-  #   card_body(
-  #     p("Conservation efforts focused on these high-priority bird species help
-  #       protect and enhance habitats that benefit other wildlife and people across Connecticut.
-  #       This is an example Shiny app showcasing priority bird species.")
-  #   )
-  # ),
+
   
   #card_with_wave_header, 
   full_width_with_wave_header,
   
-  # Bird carousel (will be filled by server)
-  uiOutput("filtered_carousel"),
-  
-  br(),
-  
-  # Bird range map section
-  card(
-    card_header(
-      h3("Bird Range & Habitat Map", class = "text-center")
-    ),
-    card_body(
-      p("Click on a bird card above to view its range on the map below."),
-      div(
-        style = "height: 500px;",
-        leafletOutput("range_map", height = "100%")
+  layout_columns(
+    # Bird carousel (will be filled by server)
+    uiOutput("filtered_carousel"),
+    
+    card(
+      card_header(
+        div(
+          class = "d-flex align-items-center justify-content-center",
+          h4("Bird Range & Habitat Map", class = "mb-0 me-2"),
+          tooltip(
+            bs_icon("info-circle"),
+            "Click on a bird card to view its range on the map.",
+            placement = "top"
+          )
+        )
       ),
-      div(
-        class = "mt-3",
-        h4(textOutput("selected_bird_title")),
-        p(textOutput("selected_bird_description"))
+      card_body(
+        div(
+          style = "height: 500px;",
+          leafletOutput("range_map", height = "100%")
+        ) #,
+        # div(
+        #   class = "mt-3",
+        #   h4(textOutput("selected_bird_title")),
+        #   p(textOutput("selected_bird_description"))
+        # )
       )
     )
   ),
+  
   
   # Custom CSS to make carousel arrows more visible
   tags$style(HTML("
@@ -380,10 +380,10 @@ ui <- page_sidebar(
       padding: 10px;
     }
     .carousel-control-prev {
-      left: -50px;
+      left: -25px;
     }
     .carousel-control-next {
-      right: -50px;
+      right: -25px;
     }
     .carousel-item {
       transition: transform 0.6s ease-in-out;
@@ -465,7 +465,7 @@ server <- function(input, output, session) {
         setView(
           lng = selected_bird$range_center$lng, 
           lat = selected_bird$range_center$lat, 
-          zoom = 9
+          zoom = 7
         ) %>%
         addCircles(
           lng = selected_bird$range_center$lng,
